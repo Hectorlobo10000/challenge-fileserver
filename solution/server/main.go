@@ -2,27 +2,13 @@ package main
 
 import (
 	"log"
-	"net"
 )
-
-func newServer() *server {
-	return &server{}
-}
-
-func initialization() net.Listener {
-	listener, err := net.Listen("tcp", ":9999")
-
-	if err != nil {
-		log.Fatalf(err.Error())
-		return
-	}
-
-	return listener
-}
 
 func main() {
 	listener := initialization()
 	server := newServer()
+
+	go server.listen()
 
 	defer listener.Close()
 	log.Println("Server running on port: 99999")

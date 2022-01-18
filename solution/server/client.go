@@ -8,31 +8,13 @@ import (
 )
 
 type client struct {
-	conn    net.Conn
-	channel *channel
+	conn     net.Conn
+	name     string
+	channel  *channel
+	commands chan<- command
 }
 
-func (c *client) readInput() {
-	for {
-		message, err := bufio.NewReader(c.conn).ReadString('\n')
-
-		if err != nil {
-			return
-		}
-
-		message = strings.Trim(message, "\r\n")
-
-		args := strings.Split(message, " ")
-		command := strings.TrimSpace(args[0])
-
-		switch command {
-		case "-channel":
-			log.Println("set a channel")
-		}
-	}
-}
-
-func (c *client) listen() {
+func (c *client) readCommand() {
 	for {
 		message, err := bufio.NewReader(c.conn).ReadString('\n')
 
@@ -45,12 +27,20 @@ func (c *client) listen() {
 
 		args := strings.Split(message, " ")
 
-		command := strings.TrimSpace(args[0])
+		cmd := strings.TrimSpace(args[0])
 
-		switch command {
-		case "-channel":
-			log.Println("print")
+		switch cmd {
+		case "-subscribe":
+			c.commands <- command{id: CMD_SUBSCRIBE, client: c, args: args}
+		case "-send":
+			c.commands <- command{id: CMD_SEND, client: c, args: args}
+		default:
+			log.Printf("unkown command: %s", cmd)
 		}
 
 	}
+}
+
+func (c *client) sendMessage(message string) {
+	c.conn.Write([]byte(message))
 }
