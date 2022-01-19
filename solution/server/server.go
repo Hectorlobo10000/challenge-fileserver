@@ -84,6 +84,7 @@ func (s *server) send(c *client, args []string) {
 	}
 
 	message := strings.Join(args[1:], " ")
+	log.Println(message)
 	c.channel.broadcast(c, c.name+": "+message)
 	log.Printf("message send client: %s, channel: %s", c.name, c.channel.name)
 }

@@ -42,5 +42,5 @@ func (c *client) readCommand() {
 }
 
 func (c *client) sendMessage(message string) {
-	c.conn.Write([]byte(message))
+	c.conn.Write([]byte(message + "\n"))
 }
