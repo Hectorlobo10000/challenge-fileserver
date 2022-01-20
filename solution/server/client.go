@@ -17,9 +17,10 @@ type client struct {
 func (c *client) readCommand() {
 	for {
 		message, err := bufio.NewReader(c.conn).ReadString('\n')
+		//message, _, err := bufio.NewReader(c.conn).ReadLine()
 
 		if err != nil {
-			log.Fatalf(err.Error())
+			log.Fatalf("readCommand func: %s", err.Error())
 			return
 		}
 
