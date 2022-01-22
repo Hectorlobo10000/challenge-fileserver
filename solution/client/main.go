@@ -2,12 +2,16 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"log"
+	"net"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 func main() {
+
 	conn := initialization()
 
 	defer conn.Close()
@@ -33,7 +37,8 @@ loop:
 			break loop
 		case "-send":
 			print("sending... \n")
-			conn.Write([]byte(message + "\n"))
+			interCommand(args, conn)
+			//conn.Write([]byte(message + "\n"))
 		}
 	}
 
@@ -49,4 +54,44 @@ loop:
 		log.Println(message)
 	}
 
+}
+
+func interCommand(args []string, conn net.Conn) {
+	mydir, _ := os.Getwd()
+
+	filePath := filepath.Join(mydir, strings.TrimSpace(args[1]))
+
+	file, err := os.Open(filePath)
+
+	fileInfo, _ := file.Stat()
+
+	buf := make([]byte, fileInfo.Size())
+
+	bFile, _ := file.Read(buf)
+
+	defer file.Close()
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	msg := &message{
+		User:     conn.LocalAddr().String(),
+		Command:  strings.TrimSpace(args[0]),
+		Context:  strings.TrimSpace(args[1]),
+		FileName: fileInfo.Name(),
+		File:     buf[:bFile],
+	}
+
+	b, err := json.Marshal(msg)
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	jsonStruct := string(b)
+	body := strings.TrimSpace(args[0]) + " " + jsonStruct + "\n"
+
+	conn.Write([]byte(body))
 }

@@ -52,6 +52,5 @@ func (s *tcpServer) tcpHandler(si socketio.Conn, conn net.Conn) {
 		s.commands <- command{
 			id: CMD_LISTENING, socketConnection: si, message: message,
 		}
-		log.Println(message)
 	}
 }

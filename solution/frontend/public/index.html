@@ -11,10 +11,9 @@
   const socket = io();
 
   socket.on('message', function(msg){
-    console.log(msg)
+      console.log(JSON.parse(msg).user)
   });
 
-  // socket.emit('message', "mensaje");
 </script>
 </body>
 </html>

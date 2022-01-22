@@ -11,19 +11,19 @@ import (
 func main() {
 	server := socketio.NewServer(nil)
 
-	conn := initialization()
 	tcpListener := newTcpServer()
-
-	defer conn.Close()
-	log.Println("Connected to server...")
-
-	conn.Write([]byte("-subscribe #tree \n"))
 
 	go tcpListener.listen()
 
 	server.OnConnect("/", func(s socketio.Conn) error {
 		s.SetContext("")
 		log.Printf("new client connected: %s", s.ID())
+
+		conn := initialization()
+		conn.Write([]byte("-subscribe #tree \n"))
+
+		defer conn.Close()
+		log.Printf("Connected to server: %s", conn.RemoteAddr().String())
 
 		for {
 			message, err := bufio.NewReader(conn).ReadString('\n')
@@ -37,7 +37,6 @@ func main() {
 			tcpListener.commands <- command{
 				id: CMD_LISTENING, socketConnection: s, message: message,
 			}
-			log.Println(message)
 		}
 
 		return nil
