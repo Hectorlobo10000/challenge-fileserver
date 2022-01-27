@@ -2,18 +2,56 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <title>Stats</title>
 </head>
 <body>
 
+<div id="app">
+    <v-app id="inspire">
+        <v-main class="pt-16">
+            <v-card
+                    class="mx-auto"
+                    max-width="800"
+            >
+                <v-banner single-line>
+                    Stats
+                </v-banner>
+
+                <v-divider></v-divider>
+
+                <v-data-table
+                        :headers="headers"
+                        :items="messages"
+                        :items-per-page="5"
+                        class="elevation-1"
+                >
+                    <template v-slot:item.id="{ item }">
+                        <v-btn
+                            elevation="2"
+                            @click="downloadFile(item.id, $event)"
+                            color="primary"
+                        >
+                            Download
+                        </v-btn>
+                    </template>
+                </v-data-table>
+
+            </v-card>
+        </v-main>
+    </v-app>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
 <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-<script>
-  const socket = io();
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js" integrity="sha512-csNcFYJniKjJxRWRV1R7fvnXrycHP6qDR21mgz1ZP55xY5d+aHLfo9/FcGDQLfn2IfngbAHd8LdfsagcCqgTcQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://unpkg.com/b64-to-blob"></script>
 
-  socket.on('message', function(msg){
-      console.log(JSON.parse(msg).user)
-  });
+<script src="vue.js"></script>
 
-</script>
 </body>
 </html>

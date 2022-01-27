@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"github.com/gofrs/uuid"
 	"log"
 	"net"
 	"os"
@@ -22,16 +23,16 @@ func main() {
 loop:
 	for scanner.Scan() {
 
-		message := scanner.Text() + "\n"
-		message = strings.Trim(message, "\r\n")
+		messageR := scanner.Text() + "\n"
+		messageR = strings.Trim(messageR, "\r\n")
 
-		args := strings.Split(message, " ")
+		args := strings.Split(messageR, " ")
 		cmd := strings.TrimSpace(args[0])
 
 		switch cmd {
 		case "-subscribe":
 			print("subscribed... \n")
-			conn.Write([]byte(message + "\n"))
+			conn.Write([]byte(messageR + "\n"))
 		case "-listen":
 			print("listening... \n")
 			break loop
@@ -43,15 +44,18 @@ loop:
 	}
 
 	for {
-		message, err := bufio.NewReader(conn).ReadString('\n')
+		messageR, err := bufio.NewReader(conn).ReadString('\n')
 
 		if err != nil {
 			log.Println(err.Error())
 		}
 
-		message = strings.Trim(message, "\r\n")
+		messageR = strings.Trim(messageR, "\r\n")
 
-		log.Println(message)
+		var msg message
+		json.Unmarshal([]byte(messageR), &msg)
+
+		log.Println(msg.Filename)
 	}
 
 }
@@ -60,6 +64,8 @@ func interCommand(args []string, conn net.Conn) {
 	mydir, _ := os.Getwd()
 
 	filePath := filepath.Join(mydir, strings.TrimSpace(args[1]))
+
+	fileExten := filepath.Ext(filePath)
 
 	file, err := os.Open(filePath)
 
@@ -75,12 +81,17 @@ func interCommand(args []string, conn net.Conn) {
 		log.Println(err)
 	}
 
+	newId, _ := uuid.NewV4()
+
 	msg := &message{
-		User:     conn.LocalAddr().String(),
-		Command:  strings.TrimSpace(args[0]),
-		Context:  strings.TrimSpace(args[1]),
-		FileName: fileInfo.Name(),
-		File:     buf[:bFile],
+		Id:          newId,
+		User:        conn.LocalAddr().String(),
+		Command:     strings.TrimSpace(args[0]),
+		Context:     strings.TrimSpace(args[1]),
+		Filename:    fileInfo.Name(),
+		Extension:   fileExten,
+		ContentType: getMimes(fileExten),
+		File:        buf[:bFile],
 	}
 
 	b, err := json.Marshal(msg)

@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"log"
 	"net"
-	"strings"
 )
 
 type client struct {
@@ -28,26 +26,26 @@ func initialization() net.Conn {
 	return conn
 }
 
-func (c *client) handlerConnection(conn net.Conn, line string) {
-	//m := &message{conn: conn, commands: c.commands}
-
-	conn.Write([]byte(line + "\n"))
-
-	c.listen(conn)
-
-	//m.readCommand()
-}
-
-func (c *client) listen(conn net.Conn) {
-	for {
-		message, err := bufio.NewReader(conn).ReadString('\n')
-
-		if err != nil {
-			return
-		}
-
-		message = strings.Trim(message, "\r\n")
-
-		log.Println(message)
-	}
-}
+//func (c *client) handlerConnection(conn net.Conn, line string) {
+//	//m := &message{conn: conn, commands: c.commands}
+//
+//	conn.Write([]byte(line + "\n"))
+//
+//	c.listen(conn)
+//
+//	//m.readCommand()
+//}
+//
+//func (c *client) listen(conn net.Conn) {
+//	for {
+//		message, err := bufio.NewReader(conn).ReadString('\n')
+//
+//		if err != nil {
+//			return
+//		}
+//
+//		message = strings.Trim(message, "\r\n")
+//
+//		log.Println(message)
+//	}
+//}
