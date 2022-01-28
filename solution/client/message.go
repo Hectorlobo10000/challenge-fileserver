@@ -10,5 +10,6 @@ type message struct {
 	Filename    string    `json:"filename"`
 	Extension   string    `json:"extension"`
 	ContentType string    `json:"contentType"`
+	FileSize    int64     `json:"fileSize"`
 	File        []byte    `json:"file"`
 }

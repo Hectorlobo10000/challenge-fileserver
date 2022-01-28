@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"github.com/gofrs/uuid"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -39,7 +40,6 @@ loop:
 		case "-send":
 			print("sending... \n")
 			interCommand(args, conn)
-			//conn.Write([]byte(message + "\n"))
 		}
 	}
 
@@ -55,12 +55,51 @@ loop:
 		var msg message
 		json.Unmarshal([]byte(messageR), &msg)
 
-		log.Println(msg.Filename)
+		log.Printf("filename: %s --- filesize: %v ", msg.Filename, msg.FileSize)
+
+		filename := msg.Id.String() + " " + msg.Filename
+		errWriteFile := ioutil.WriteFile(filename, msg.File, 0644)
+
+		if errWriteFile != nil {
+			log.Println(errWriteFile)
+		}
+
+		log.Println("File saved")
 	}
 
 }
 
 func interCommand(args []string, conn net.Conn) {
+	fileExten, fileInfo, buf, bFile, err := readFile(args)
+
+	newId, _ := uuid.NewV4()
+
+	msg := &message{
+		Id:          newId,
+		User:        conn.LocalAddr().String(),
+		Command:     strings.TrimSpace(args[0]),
+		Context:     strings.TrimSpace(args[1]),
+		Filename:    fileInfo.Name(),
+		Extension:   fileExten,
+		ContentType: getMimes(fileExten),
+		FileSize:    fileInfo.Size(),
+		File:        buf[:bFile],
+	}
+
+	b, err := json.Marshal(msg)
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	jsonStruct := string(b)
+	body := strings.TrimSpace(args[0]) + " " + jsonStruct + "\n"
+
+	conn.Write([]byte(body))
+}
+
+func readFile(args []string) (string, os.FileInfo, []byte, int, error) {
 	mydir, _ := os.Getwd()
 
 	filePath := filepath.Join(mydir, strings.TrimSpace(args[1]))
@@ -79,30 +118,7 @@ func interCommand(args []string, conn net.Conn) {
 
 	if err != nil {
 		log.Println(err)
+		return "", nil, nil, 0, err
 	}
-
-	newId, _ := uuid.NewV4()
-
-	msg := &message{
-		Id:          newId,
-		User:        conn.LocalAddr().String(),
-		Command:     strings.TrimSpace(args[0]),
-		Context:     strings.TrimSpace(args[1]),
-		Filename:    fileInfo.Name(),
-		Extension:   fileExten,
-		ContentType: getMimes(fileExten),
-		File:        buf[:bFile],
-	}
-
-	b, err := json.Marshal(msg)
-
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	jsonStruct := string(b)
-	body := strings.TrimSpace(args[0]) + " " + jsonStruct + "\n"
-
-	conn.Write([]byte(body))
+	return fileExten, fileInfo, buf, bFile, nil
 }
